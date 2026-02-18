@@ -1,11 +1,12 @@
 FROM php:8.4-fpm-alpine
 
-ADD https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions /usr/local/bin/
-RUN chmod +x /usr/local/bin/install-php-extensions
-
 # Worker doesn't need nginx/npm/nodejs
-RUN apk add --no-cache bash curl git zip unzip && \
-    install-php-extensions pdo_pgsql pdo_mysql exif pcntl bcmath gd zip gmp opcache intl redis
+RUN apk add --no-cache bash curl zip unzip imap-dev && \
+    curl -sSLf -o /usr/local/bin/install-php-extensions \
+        https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions && \
+    chmod +x /usr/local/bin/install-php-extensions && \
+    install-php-extensions pdo_pgsql pdo_mysql exif pcntl bcmath gd zip gmp opcache intl redis imap && \
+    rm -f /usr/local/bin/install-php-extensions
 
 # OPcache config
 COPY opcache.ini /usr/local/etc/php/conf.d/opcache.ini
