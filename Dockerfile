@@ -53,7 +53,8 @@ RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache && \
 
 EXPOSE 80
 
-CMD php artisan migrate --force \
+CMD chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache \
+    && php artisan migrate --force \
     && php artisan optimize \
     && php artisan filament:optimize \
     && php artisan icons:cache \
