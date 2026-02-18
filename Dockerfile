@@ -1,12 +1,12 @@
 FROM php:8.4-fpm-alpine
 
-# Add PHP extension installer
-ADD https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions /usr/local/bin/
-RUN chmod +x /usr/local/bin/install-php-extensions
-
-# Install system dependencies & PHP extensions in one layer
-RUN apk add --no-cache bash nginx curl git zip unzip npm nodejs imap-dev && \
+# Install system dependencies, PHP extensions & cleanup in one layer
+RUN apk add --no-cache bash nginx curl zip unzip npm nodejs imap-dev && \
+    curl -sSLf -o /usr/local/bin/install-php-extensions \
+        https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions && \
+    chmod +x /usr/local/bin/install-php-extensions && \
     install-php-extensions pdo_pgsql pdo_mysql exif pcntl bcmath gd zip gmp opcache intl redis imap && \
+    rm -f /usr/local/bin/install-php-extensions && \
     mkdir -p /var/run/php
 
 # OPcache config
@@ -50,7 +50,7 @@ RUN composer dump-autoload --optimize && \
 RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache && \
     chmod -R 775 /var/www/storage /var/www/bootstrap/cache
 
-# Entrypoint script
+# Entrypoint
 COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
