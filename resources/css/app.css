@@ -1,0 +1,267 @@
+@import '../../vendor/filament/filament/resources/css/theme.css';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../**/*.blade.php';
+@source '../**/*.js';
+
+@layer components {
+    /* Month picker */
+    /*.dark .flatpickr-calendar {*/
+    /*    border-radius: 8px !important;*/
+    /*    overflow: hidden !important;*/
+    /*}*/
+
+    /*.dark .flatpickr-month {*/
+    /*    background: #3C4052 !important;*/
+    /*}*/
+
+    /*.dark .flatpickr-innerContainer {*/
+    /*    background: #3F4458 !important;*/
+    /*    border-bottom: none !important;*/
+    /*}*/
+
+    /*.dark .flatpickr-monthPicker-month.today {*/
+    /*    border-color: #5d637a !important;*/
+    /*    background: #5d637a !important;*/
+    /*}*/
+
+    /*.dark .flatpickr-confirm {*/
+    /*    background: #3C4052 !important;*/
+    /*}*/
+
+
+    /*html:not(.dark) {*/
+    /*    !* Month picker *!*/
+    /*    .flatpickr-calendar {*/
+    /*        border-radius: 8px !important;*/
+    /*        border: 1px solid rgba(113, 113, 122, 0.2) !important;*/
+    /*        overflow: hidden !important;*/
+    /*    }*/
+
+    /*    .flatpickr-month {*/
+    /*        background: #fff !important;*/
+    /*        border-bottom: 1px solid rgba(113, 113, 122, 0.2) !important;*/
+    /*    }*/
+
+    /*    .flatpickr-monthPicker-month:hover {*/
+    /*        background-color: rgba(245, 158, 11, 0.17) !important;*/
+    /*        border-color: rgba(245, 158, 11, 0.17) !important;*/
+    /*    }*/
+
+    /*    .flatpickr-innerContainer {*/
+    /*        background: #fff !important;*/
+    /*        border-bottom: none !important;*/
+    /*    }*/
+
+    /*    .flatpickr-monthPicker-month.today {*/
+    /*        border-color: #ddd !important;*/
+    /*        background: #ddd !important;*/
+    /*    }*/
+
+    /*    .flatpickr-monthPicker-month {*/
+    /*        color: #413f3f !important;*/
+    /*    }*/
+
+    /*    .cur-year {*/
+    /*        color: #413f3f !important;*/
+    /*    }*/
+
+    /*    .flatpickr-prev-month svg path,*/
+    /*    .flatpickr-next-month svg path {*/
+    /*        stroke: #413f3f !important;*/
+    /*    }*/
+
+    /*    .flatpickr-confirm {*/
+    /*        background: #fff !important;*/
+    /*        color: #413f3f !important;*/
+    /*        border-top: 1px solid rgba(113, 113, 122, 0.2) !important;*/
+    /*    }*/
+
+    /*    .flatpickr-confirm svg path {*/
+    /*        fill: #413f3f !important;*/
+    /*    }*/
+    /*}*/
+
+
+    /*.flatpickr-monthPicker-month.selected {*/
+    /*    background-color: #F59E0B !important;*/
+    /*    border-color: #F59E0B !important;*/
+    /*}*/
+
+
+
+    /* Services */
+    .servicePriceSum {
+        cursor: default !important;
+        background: none !important;
+        color: #09090B !important;
+        box-shadow: none !important;
+    }
+
+    .dark .servicePriceSum {
+        color: #fff !important;
+    }
+
+
+
+    /* Tables */
+
+    .is_paid-toggle div.pointer-events-none {
+        display: none !important;
+    }
+
+    .fi-ta-row{
+        transition: all 0.3s ease !important;
+    }
+
+    .paid-row {
+        background-color: #c9e4b3 !important;
+    }
+    .paid-row:hover {
+        background-color: #add68d !important;
+    }
+    .dark .paid-row {
+        background-color: #416718 !important;
+    }
+    .dark .paid-row:hover {
+        background-color: #4c7a23 !important;
+    }
+
+    .unpaid-row {
+        background-color: #ffc0b9 !important;
+    }
+    .unpaid-row:hover {
+        background-color: #ffa197 !important;
+    }
+    .dark .unpaid-row {
+        background-color: #7f352d !important;
+    }
+    .dark .unpaid-row:hover {
+        background-color: #98443d !important;
+    }
+
+    .free-row {
+        background-color: #b5ecff !important;
+    }
+    .free-row:hover {
+        background-color: #94e3fe !important;
+    }
+    .dark .free-row {
+        background-color: #477a8b !important;
+    }
+    .dark .free-row:hover {
+        background-color: #639caf !important;
+    }
+
+    .turned_off-row {
+        background-color: #abaebd !important;
+    }
+    .turned_off-row:hover {
+        background-color: #8d93a2 !important;
+    }
+    .dark .turned_off-row {
+        background-color: #474b5f !important;
+    }
+    .dark .turned_off-row:hover {
+        background-color: #64687c !important;
+    }
+
+    .fi-ta-group-header {
+        padding: 1.2rem;
+    }
+
+    .fi-ta-group-header .fi-ta-group-heading {
+        font-size: 1.3rem !important;
+        font-weight: bold !important;
+    }
+
+    .fi-ta-header-toolbar > div:first-child {
+        order: 2;
+    }
+
+    .fi-ta-header-toolbar > div:nth-child(2) {
+        order: 1;
+        margin: 0 !important;
+
+        .fi-ta-search-field {
+            order: 0 !important;
+        }
+    }
+
+    .fi-ta-search-field input {
+        padding-inline: 0.5rem !important;
+    }
+
+    .custom-phone-input .added-phone {
+        font-size: 14px !important;
+        width: calc(100% - 36px) !important;
+    }
+
+    .fi-ac {
+        justify-content: flex-end !important;
+    }
+
+
+
+    /* Service Prices */
+
+    .service-prices-page {
+        p {
+            white-space: normal;
+        }
+    }
+
+    .service-prices-page > section > div > .grid{
+        overflow-x: auto;
+    }
+
+    .service-prices-page .fi-ta-header-cell{
+        min-width: 100px;
+    }
+
+    .quick-links > *:not(.quick-link) {
+        display: none !important;
+    }
+
+    .fi-table-cell-quick-links {
+        max-width: 90px !important;
+    }
+
+
+
+    /* Stats widget icon colors */
+
+    .fi-wi-stats-overview-stat .fi-icon {
+        width: 2rem !important;
+        height: 2rem !important;
+    }
+
+    .stat-info .fi-icon {
+        color: #3C82F6 !important;
+    }
+    .dark .stat-info .fi-icon {
+        color: #60a5fa !important;
+    }
+
+    .stat-danger .fi-icon {
+        color: #ef4444 !important;
+    }
+    .dark .stat-danger .fi-icon {
+        color: #f87171 !important;
+    }
+
+    .stat-success .fi-icon {
+        color: #22c55e !important;
+    }
+    .dark .stat-success .fi-icon {
+        color: #4ade80 !important;
+    }
+
+    .stat-warning .fi-icon {
+        color: #f59e0b !important;
+    }
+    .dark .stat-warning .fi-icon {
+        color: #fbbf24 !important;
+    }
+}

@@ -1,0 +1,8 @@
+{
+    "Reset Password Notification": "Obnova hesla",
+    "Hello": "Dobrý deň",
+    "You are receiving this email because we received a password reset request for your account.": "Dostali ste tento e-mail, pretože ste požiadali o obnovu hesla.",
+    "Reset Password": "Obnoviť hesla",
+    "This password reset link will expire in :count minutes.": "Tento odkaz na obnovu hesla vyprší o :count minút.",
+    "If you did not request a password reset, no further action is required.": "Ak ste nevyžiadali obnovu hesla, ignorujte tento e-mail."
+}
