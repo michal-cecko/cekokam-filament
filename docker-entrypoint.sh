@@ -1,9 +1,15 @@
 #!/bin/bash
 set -e
 
-# Fix permissions only on mounted volumes (fast, targeted)
-chown -R www-data:www-data /var/www/storage/app /var/www/storage/logs 2>/dev/null || true
-chmod -R 775 /var/www/storage/app /var/www/storage/logs 2>/dev/null || true
+# Recreate framework directories inside tmpfs mounts (wiped on every start)
+mkdir -p /var/www/storage/framework/cache/data \
+         /var/www/storage/framework/sessions \
+         /var/www/storage/framework/views \
+         /var/www/bootstrap/cache
+
+# Fix permissions on mounted volumes
+chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache 2>/dev/null || true
+chmod -R 775 /var/www/storage /var/www/bootstrap/cache 2>/dev/null || true
 
 # Run migrations
 php artisan migrate --force
