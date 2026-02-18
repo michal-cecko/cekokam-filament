@@ -5,6 +5,7 @@ namespace App\Models\Service;
 use App\Models\Customer\CustomerService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Cache;
 
 class ServiceType extends Model
 {
@@ -16,7 +17,10 @@ class ServiceType extends Model
     {
         parent::boot();
 
+        static::saved(fn () => Cache::forget('service_types_all'));
+
         static::deleted(function ($model) {
+            Cache::forget('service_types_all');
             $model->customerServices()->delete();
         });
     }

@@ -8,6 +8,9 @@ services:
       - "8001:80"
     env_file:
       - .env.prod
+    depends_on:
+      redis:
+        condition: service_healthy
     volumes:
       - type: bind
         source: /volumes/cekokam-app/storage/app
@@ -45,3 +48,38 @@ services:
       retries: 3
       start_period: 30s
     restart: always
+
+  redis:
+    image: redis:7-alpine
+    container_name: cekokam-redis
+    command: redis-server --maxmemory 128mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    restart: always
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile-worker
+    container_name: cekokam-worker
+    env_file:
+      - .env.prod
+    depends_on:
+      redis:
+        condition: service_healthy
+    volumes:
+      - type: bind
+        source: /volumes/cekokam-app/storage/app
+        target: /var/www/storage/app
+      - type: bind
+        source: /volumes/cekokam-app/storage/logs
+        target: /var/www/storage/logs
+    restart: always
+
+volumes:
+  redis-data:

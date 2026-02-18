@@ -10,6 +10,7 @@ use Filament\Pages\Concerns\ExposesTableToWidgets;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Schemas\Components\Tabs\Tab;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Cache;
 
 class ListCustomers extends ListRecords
 {
@@ -36,11 +37,11 @@ class ListCustomers extends ListRecords
         ];
 
         foreach (CustomerStatus::cases() as $status) {
-            $tabs[$status->value] = Tab::make(CustomerStatus::translated()[$status->value])->modifyQueryUsing(fn(Builder $query) => $query->where('status', $status));
+            $tabs[$status->value] = Tab::make(CustomerStatus::translated()[$status->value])->modifyQueryUsing(fn (Builder $query) => $query->where('status', $status));
         }
 
-        foreach (ServiceType::all() as $serviceType) {
-            $tabs[$serviceType->id] = Tab::make($serviceType->name)->modifyQueryUsing(fn(Builder $query) => $query->whereHas('services', function ($query) use ($serviceType) {
+        foreach (Cache::remember('service_types_all', 300, fn () => ServiceType::all()) as $serviceType) {
+            $tabs[$serviceType->id] = Tab::make($serviceType->name)->modifyQueryUsing(fn (Builder $query) => $query->whereHas('services', function ($query) use ($serviceType) {
                 $query->where('service_type_id', $serviceType->id);
             }));
         }

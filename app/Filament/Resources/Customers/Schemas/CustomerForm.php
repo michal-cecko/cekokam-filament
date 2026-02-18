@@ -3,7 +3,6 @@
 namespace App\Filament\Resources\Customers\Schemas;
 
 use App\Enum\RoleEnum;
-use App\Filament\Resources\CustomerServices\CustomerServiceResource;
 use App\Filament\Resources\CustomerServices\Schemas\CustomerServiceForm;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Repeater;
@@ -29,7 +28,7 @@ class CustomerForm
 
                 Section::make('Služby')
                     ->schema([
-                        static::getServicesRepeater()
+                        static::getServicesRepeater(),
                     ])->columnSpanFull(),
             ]);
     }
@@ -53,9 +52,21 @@ class CustomerForm
             CustomerFormFields::serverId()
                 ->disabled($isReadOnly)
                 ->columnSpan(['default' => 12, 'sm' => 3, 'md' => 2]),
-            CustomerFormFields::ipAddresses()
+            CustomerFormFields::ipStart()
                 ->disabled($isReadOnly)
-                ->columnSpan(['default' => 12, 'sm' => 3, 'md' => 2]),
+                ->columnSpan(['default' => 6, 'sm' => 3, 'md' => 2]),
+            CustomerFormFields::ipEnd()
+                ->disabled($isReadOnly)
+                ->columnSpan(['default' => 6, 'sm' => 3, 'md' => 2]),
+            CustomerFormFields::iban()
+                ->disabled($isReadOnly)
+                ->columnSpan(['default' => 12, 'sm' => 3, 'md' => 4]),
+            CustomerFormFields::hasDifferentPrices()
+                ->disabled($isReadOnly)
+                ->columnSpanFull(),
+            CustomerFormFields::status()
+                ->disabled($isReadOnly)
+                ->columnSpan(12),
             CustomerFormFields::note()
                 ->columnSpan(12),
         ];
@@ -64,9 +75,9 @@ class CustomerForm
     protected static function getServicesRepeater(): Repeater
     {
         return Repeater::make('services')
-            ->label("Služby zákazníka")
+            ->label('Služby zákazníka')
             ->relationship('services')
-            ->addActionLabel("Pridať službu zákazníkovi")
+            ->addActionLabel('Pridať službu zákazníkovi')
             ->columnSpanFull()
             ->schema([
                 Hidden::make('id'),

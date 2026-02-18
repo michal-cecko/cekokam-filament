@@ -22,16 +22,18 @@ use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Grouping\Group;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 class CustomersTable
 {
     public static function configure(Table $table): Table
     {
-        $counts = DB::table('customers')
+        $counts = Cache::remember('customers_year_counts', 300, fn () => DB::table('customers')
             ->selectRaw('year_added, COUNT(*) as total')
             ->groupBy('year_added')
-            ->get();
+            ->get()
+        );
 
         return $table
             ->columns([

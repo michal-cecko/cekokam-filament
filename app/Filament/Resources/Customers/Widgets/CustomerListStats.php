@@ -38,21 +38,15 @@ class CustomerListStats extends BaseWidget
     {
         $count = $this->getPageTableQuery()->count();
 
-        $unpaid = $this->getPageTableQuery()
-            ->where('status', CustomerStatus::UNPAID)
-            ->with('services')
-            ->get()
-            ->sum('total_price');
-
-        $all = $this->getPageTableQuery()
+        // Load active customers once instead of 3 separate queries
+        $activeCustomers = $this->getPageTableQuery()
             ->where('status', '!=', CustomerStatus::TURNED_OFF)
-            ->get()
-            ->sum('total_price');
+            ->with(['services', 'currentPeriodPayments'])
+            ->get();
 
-        $monthly = $this->getPageTableQuery()
-            ->where('status', '!=', CustomerStatus::TURNED_OFF)
-            ->get()
-            ->sum('total_monthly_price');
+        $unpaid = $activeCustomers->where('status', CustomerStatus::UNPAID)->sum('total_price');
+        $all = $activeCustomers->sum('total_price');
+        $monthly = $activeCustomers->sum('total_monthly_price');
 
         return [
             Stat::make('Počet', $count)

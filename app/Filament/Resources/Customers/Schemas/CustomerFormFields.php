@@ -10,6 +10,8 @@ use Coolsam\Flatpickr\Forms\Components\Flatpickr;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
+use Filament\Forms\Components\ToggleButtons;
 
 class CustomerFormFields
 {
@@ -56,26 +58,67 @@ class CustomerFormFields
             ->default(request()->query('viaServer') ?? null);
     }
 
-    public static function ipAddresses(): TextInput
+    public static function ipStart(): TextInput
     {
-        return TextInput::make('ip_addresses')
-            ->label('IP adresy')
-            ->placeholder('napr. 15,21,22-25')
-            ->helperText('Zadajte IP adresy oddelené čiarkou. Rozsahy zapíšte ako 22-25.');
+        return TextInput::make('ip_start')
+            ->label('IP od')
+            ->numeric()
+            ->maxValue(254)
+            ->minValue(1)
+            ->rules(['sometimes', 'nullable', 'integer'])
+            ->afterStateHydrated(function (?string $state, callable $set, ?Customer $record) {
+                if (is_null($state) && $record) {
+                    $set('ip_start', $record->lowest_ip);
+                }
+            });
+    }
+
+    public static function ipEnd(): TextInput
+    {
+        return TextInput::make('ip_end')
+            ->label('IP do')
+            ->numeric()
+            ->maxValue(254)
+            ->minValue(1)
+            ->rules(['sometimes', 'nullable', 'integer'])
+            ->afterStateHydrated(function (?string $state, callable $set, ?Customer $record) {
+                if (is_null($state) && $record) {
+                    $set('ip_end', $record->highest_ip);
+                }
+            });
+    }
+
+    public static function iban(): Select
+    {
+        return Select::make('iban')
+            ->label('IBAN')
+            ->relationship('bankAccount', 'iban')
+            ->searchable()
+            ->preload()
+            ->placeholder('Vyberte...');
+    }
+
+    public static function hasDifferentPrices(): Toggle
+    {
+        return Toggle::make('has_different_prices')
+            ->label('Má iné ceny')
+            ->inline();
+    }
+
+    public static function status(): ToggleButtons
+    {
+        return ToggleButtons::make('status')
+            ->options(CustomerStatus::translated())
+            ->default(CustomerStatus::UNPAID->value)
+            ->inline()
+            ->icons(CustomerStatus::icons())
+            ->colors(CustomerStatus::colors());
     }
 
     public static function note(): Textarea
     {
         return Textarea::make('note')
             ->label('Poznámky');
-    }
-
-    public static function status(): Select
-    {
-        return Select::make('status')
-            ->label('Status')
-            ->options(CustomerStatus::translated())
-            ->placeholder('Vyberte...');
     }
 
     public static function subscriptionStart(): Flatpickr

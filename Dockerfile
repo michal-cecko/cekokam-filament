@@ -7,8 +7,6 @@ RUN chmod +x /usr/local/bin/install-php-extensions
 # Install system dependencies & PHP extensions in one layer
 RUN apk add --no-cache bash nginx curl git zip unzip npm nodejs imap-dev && \
     install-php-extensions pdo_pgsql pdo_mysql exif pcntl bcmath gd zip gmp opcache intl redis imap && \
-    echo "listen = /var/run/php/php-fpm.sock" >> /usr/local/etc/php-fpm.d/zz-docker.conf && \
-    echo "listen.mode = 0666" >> /usr/local/etc/php-fpm.d/zz-docker.conf && \
     mkdir -p /var/run/php
 
 # OPcache config
@@ -20,8 +18,9 @@ ENV PHP_OPCACHE_ENABLE=1 \
     PHP_OPCACHE_MEMORY_CONSUMPTION=192 \
     PHP_OPCACHE_MAX_WASTED_PERCENTAGE=10
 
-# Copy PHP & Nginx config early (rarely changes = better cache)
+# Copy PHP, PHP-FPM pool & Nginx config early (rarely changes = better cache)
 COPY ./php.ini /usr/local/etc/php/php.ini
+COPY ./php-fpm.conf /usr/local/etc/php-fpm.d/www.conf
 COPY ./nginx.conf /etc/nginx/nginx.conf
 
 # Composer from official image
@@ -47,16 +46,14 @@ RUN composer dump-autoload --optimize && \
     npm run build && \
     rm -rf node_modules
 
-# Set permissions
+# Set permissions at build time (not at runtime)
 RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache && \
     chmod -R 775 /var/www/storage /var/www/bootstrap/cache
 
+# Entrypoint script
+COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
 EXPOSE 80
 
-CMD chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache \
-    && php artisan migrate --force \
-    && php artisan optimize \
-    && php artisan filament:optimize \
-    && php artisan icons:cache \
-    && php artisan view:cache \
-    && php-fpm -D && nginx -g 'daemon off;'
+ENTRYPOINT ["docker-entrypoint.sh"]

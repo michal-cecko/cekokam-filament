@@ -12,6 +12,7 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 
 class Customer extends Model
@@ -45,10 +46,6 @@ class Customer extends Model
         'phone_string',
     ];
 
-    protected $with = [
-        'services',
-    ];
-
     public static function getGloballySearchableAttributes(): array
     {
         return ['name', 'email', 'phone'];
@@ -57,6 +54,9 @@ class Customer extends Model
     protected static function boot(): void
     {
         parent::boot();
+
+        static::created(fn () => Cache::forget('customers_year_counts'));
+        static::deleted(fn () => Cache::forget('customers_year_counts'));
 
         static::saving(function (Customer $model) {
             if (! empty($model->iban)) {

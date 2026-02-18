@@ -32,17 +32,18 @@ class CustomerServiceForm
             ]);
     }
 
-    public static function formFields(): array {
+    public static function formFields(): array
+    {
         return [
-            Select::make('customer_id')
+            'customer_id' => Select::make('customer_id')
                 ->label('Zákazník')
                 ->searchable()
                 ->relationship('customer', 'name')
                 ->placeholder('Vyberte...')
                 ->columnSpan(['default' => 3])
                 ->default(request()->query('viaCustomer') ?? null),
-            static::getServiceSelectField(),
-            TextInput::make('price')
+            'combined_service' => static::getServiceSelectField(),
+            'price' => TextInput::make('price')
                 ->label('Cena (€)')
                 ->required()
                 ->columnSpan(['default' => 3]),
