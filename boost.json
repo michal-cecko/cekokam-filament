@@ -11,9 +11,6 @@
     "editors": [
         "phpstorm"
     ],
-    "guidelines": [
-        "filament/filament",
-        "filament/blueprint"
-    ],
+    "guidelines": true,
     "sail": true
 }
