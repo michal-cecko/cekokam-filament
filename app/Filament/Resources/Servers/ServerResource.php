@@ -32,7 +32,7 @@ class ServerResource extends Resource
 
     public static function getRecordTitle(?Model $record): string|Htmlable|null
     {
-        return $record?->full_name;
+        return $record?->name;
     }
 
     public static function form(Schema $schema): Schema

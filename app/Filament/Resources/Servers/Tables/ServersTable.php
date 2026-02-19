@@ -18,7 +18,7 @@ class ServersTable
     {
         return $table
             ->columns([
-                TextColumn::make('full_name')
+                TextColumn::make('name')
                     ->label('Rozsah'),
                 TextColumn::make('server_link')
                     ->label('Link')
