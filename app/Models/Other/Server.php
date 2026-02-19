@@ -43,9 +43,4 @@ class Server extends Model
     {
         return 1;
     }
-
-    public function getFullNameAttribute(): string
-    {
-        return "Server {$this->name}";
-    }
 }
