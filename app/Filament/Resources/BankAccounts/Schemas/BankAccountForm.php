@@ -23,7 +23,10 @@ class BankAccountForm
                         TextInput::make('iban')
                             ->label('IBAN')
                             ->required()
-                            ->mask('SK9999999999999999999999')
+                            ->alphaNum()
+                            ->minLength(20)
+                            ->maxLength(24)
+                            ->rules(['regex:/^[A-Za-z]{2}\d{18,22}$/'])
                             ->columnSpan(12),
                         Textarea::make('note')
                             ->label('Poznámky')
