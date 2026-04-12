@@ -88,14 +88,14 @@ class CustomerFormFields
             });
     }
 
-    public static function iban(): Select
+    public static function iban(): TextInput
     {
-        return Select::make('iban')
+        return TextInput::make('iban')
             ->label('IBAN')
-            ->relationship('bankAccount', 'iban')
-            ->searchable()
-            ->preload()
-            ->placeholder('Vyberte...');
+            ->alphaNum()
+            ->minLength(20)
+            ->maxLength(24)
+            ->rules(['regex:/^[A-Za-z]{2}\d{18,22}$/']);
     }
 
     public static function hasDifferentPrices(): Toggle
