@@ -4,6 +4,7 @@ namespace App\Models\Other;
 
 use App\Models\Customer\Customer;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Server extends Model
@@ -13,6 +14,7 @@ class Server extends Model
         'color',
         'server_link',
         'ip_link',
+        'iban',
     ];
 
     protected static function boot(): void
@@ -26,6 +28,9 @@ class Server extends Model
             if (str_ends_with($model->server_link, '/')) {
                 $model->server_link = substr($model->server_link, 0, -1);
             }
+            if (! empty($model->iban)) {
+                $model->iban = str_replace(' ', '', $model->iban);
+            }
         });
     }
 
@@ -37,6 +42,11 @@ class Server extends Model
     public function customers(): HasMany
     {
         return $this->hasMany(Customer::class);
+    }
+
+    public function bankAccount(): BelongsTo
+    {
+        return $this->belongsTo(BankAccount::class, 'iban', 'iban');
     }
 
     public static function defaultServer(): int

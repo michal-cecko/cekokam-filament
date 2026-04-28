@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Servers\Schemas;
 
 use Filament\Forms\Components\ColorPicker;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Schema;
@@ -36,6 +37,13 @@ class ServerForm
                         ColorPicker::make('color')
                             ->label('Farba')
                             ->columnSpan(3),
+                        Select::make('iban')
+                            ->label('IBAN')
+                            ->relationship('bankAccount', 'iban')
+                            ->searchable()
+                            ->preload()
+                            ->placeholder('Vyberte bankový účet')
+                            ->columnSpan(6),
                     ]),
             ]);
     }

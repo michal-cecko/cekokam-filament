@@ -88,16 +88,6 @@ class CustomerFormFields
             });
     }
 
-    public static function iban(): TextInput
-    {
-        return TextInput::make('iban')
-            ->label('IBAN')
-            ->alphaNum()
-            ->minLength(20)
-            ->maxLength(24)
-            ->rules(['regex:/^[A-Za-z]{2}\d{18,22}$/']);
-    }
-
     public static function hasDifferentPrices(): Toggle
     {
         return Toggle::make('has_different_prices')

@@ -19,7 +19,7 @@ class CustomerPaymentService
         }
 
         foreach ($payments as $payment) {
-            $customer = Customer::where('iban', 'LIKE', '%'.$payment['iban'])->first();
+            $customer = Customer::whereHas('server', fn ($query) => $query->where('iban', 'LIKE', '%'.$payment['iban']))->first();
             if (! $customer) {
                 Log::error("Customer with IBAN {$payment['iban']} not found. Skipping payment with amount {$payment['amount']} from date {$payment['received_at']?->format('Y-m-d H:i:s')}");
 
@@ -33,7 +33,7 @@ class CustomerPaymentService
                     'customer_id' => $customer->id,
                     'received_at' => $payment['received_at'],
                     'amount_paid' => $payment['amount'],
-                    'iban' => $customer->iban,
+                    'iban' => $customer->server?->iban,
                 ],
                 [
                     'amount_expected' => $customer->total_price,

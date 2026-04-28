@@ -26,6 +26,10 @@ class ServersTable
                     ->openUrlInNewTab(),
                 TextColumn::make('ip_link')
                     ->label('Ip link'),
+                TextColumn::make('iban')
+                    ->label('IBAN')
+                    ->searchable()
+                    ->sortable(),
                 ColorColumn::make('color')
                     ->label('Farba'),
             ])

@@ -1,0 +1,32 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::table('servers', function (Blueprint $table) {
+            $table->string('iban')->nullable()->default(null);
+            $table->foreign('iban')->references('iban')->on('bank_accounts')->nullOnDelete();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::table('servers', function (Blueprint $table) {
+            if (! app()->runningUnitTests()) {
+                $table->dropForeign('servers_iban_foreign');
+            }
+            $table->dropColumn('iban');
+        });
+    }
+};

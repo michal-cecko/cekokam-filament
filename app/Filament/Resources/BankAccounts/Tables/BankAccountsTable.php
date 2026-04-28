@@ -20,8 +20,9 @@ class BankAccountsTable
                     ->label('IBAN')
                     ->sortable()
                     ->searchable(),
-                TextColumn::make('customer.name')
-                    ->label('Zákazník')
+                TextColumn::make('servers.name')
+                    ->label('Servery')
+                    ->badge()
                     ->searchable(),
                 TextColumn::make('note')
                     ->label('Poznámka')
@@ -47,6 +48,6 @@ class BankAccountsTable
             ->recordAction('edit')
             ->defaultPaginationPageOption(25)
             ->defaultSort('created_at', 'desc')
-            ->modifyQueryUsing(fn ($query) => $query->with(['customer']));
+            ->modifyQueryUsing(fn ($query) => $query->with(['servers']));
     }
 }

@@ -58,9 +58,6 @@ class CustomerForm
             CustomerFormFields::ipEnd()
                 ->disabled($isReadOnly)
                 ->columnSpan(['default' => 6, 'sm' => 3, 'md' => 2]),
-            CustomerFormFields::iban()
-                ->disabled($isReadOnly)
-                ->columnSpan(['default' => 12, 'sm' => 3, 'md' => 4]),
             CustomerFormFields::hasDifferentPrices()
                 ->disabled($isReadOnly)
                 ->columnSpanFull(),

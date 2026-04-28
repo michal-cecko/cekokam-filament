@@ -2,12 +2,10 @@
 
 namespace App\Models\Other;
 
-use App\Models\Customer\Customer;
 use App\Models\Customer\Payment\CustomerPayment;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class BankAccount extends Model
 {
@@ -40,9 +38,9 @@ class BankAccount extends Model
         return ['iban'];
     }
 
-    public function customer(): HasOne
+    public function servers(): HasMany
     {
-        return $this->hasOne(Customer::class, 'iban', 'iban');
+        return $this->hasMany(Server::class, 'iban', 'iban');
     }
 
     public function payments(): HasMany

@@ -47,7 +47,7 @@ class CustomerSmsService
 
     public static function getCustomerPaymentRequestSmsContent(Customer $customer): string
     {
-        return "SATELITNA SLUZBA\n\nDobry den {$customer->name} - {$customer->city?->name}.\nPosielam Vam informacie k uhrade sumy za satelitne sluzby za obdobie:\n\n{$customer->subscription_date_string}\n\nSuma: {$customer->total_price},- EUR\n\nCislo uctu (IBAN):\n {$customer->iban}\n\nUPOZORNENIE: Pre klientov, ktori budu realizovat platbu z uctu vedeneho v inej banke ako Tatra banka, je potrebne vypnut okamzitu platbu alebo nastavit datum realizacie platby na nasledujuci den.\nV opacnom pripade platba neprejde a bude Vam vratena spat na Vas ucet.\n\nV pripade otazok ma prosim kontaktujte na tel. cisle\n0911269686";
+        return "SATELITNA SLUZBA\n\nDobry den {$customer->name} - {$customer->city?->name}.\nPosielam Vam informacie k uhrade sumy za satelitne sluzby za obdobie:\n\n{$customer->subscription_date_string}\n\nSuma: {$customer->total_price},- EUR\n\nCislo uctu (IBAN):\n {$customer->server?->iban}\n\nUPOZORNENIE: Pre klientov, ktori budu realizovat platbu z uctu vedeneho v inej banke ako Tatra banka, je potrebne vypnut okamzitu platbu alebo nastavit datum realizacie platby na nasledujuci den.\nV opacnom pripade platba neprejde a bude Vam vratena spat na Vas ucet.\n\nV pripade otazok ma prosim kontaktujte na tel. cisle\n0911269686";
     }
 
     /**

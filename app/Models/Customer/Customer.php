@@ -12,6 +12,7 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 
@@ -27,7 +28,6 @@ class Customer extends Model
         'has_different_prices',
         'status',
         'city_id',
-        'iban',
         'note',
         'ip_start',
         'ip_end',
@@ -59,10 +59,6 @@ class Customer extends Model
         static::deleted(fn () => Cache::forget('customers_year_counts'));
 
         static::saving(function (Customer $model) {
-            if (! empty($model->iban)) {
-                $model->iban = str_replace(' ', '', $model->iban);
-            }
-            $model->createBankAccountIfNotExists();
             $model->parseIsPaidStatus();
             if (! empty($model->ip_start) || ! empty($model->ip_end)) {
                 $model->parseIpAddressRange();
@@ -102,9 +98,16 @@ class Customer extends Model
         return $this->payments()->whereBetween('received_at', [$period['start'], $period['end']]);
     }
 
-    public function bankAccount(): BelongsTo
+    public function bankAccount(): HasOneThrough
     {
-        return $this->belongsTo(BankAccount::class, 'iban', 'iban');
+        return $this->hasOneThrough(
+            BankAccount::class,
+            Server::class,
+            'id',
+            'iban',
+            'server_id',
+            'iban',
+        );
     }
 
     public function getTitleAttribute(): string
@@ -245,14 +248,5 @@ class Customer extends Model
 
         $this->ip_addresses = collect($this->ip_addresses)->map(fn ($ip) => (int) $ip)->sortDesc()->values();
         $this->highest_ip = max($this->ip_addresses);
-    }
-
-    private function createBankAccountIfNotExists(): void
-    {
-        if (! BankAccount::where('iban', $this->iban)->exists()) {
-            BankAccount::create([
-                'iban' => $this->iban,
-            ]);
-        }
     }
 }
