@@ -56,7 +56,7 @@ class CustomersTable
                 QuickLinksColumn::make('quick_links')
                     ->label('Odkazy')
                     ->searchable(query: function (Builder $query, string $search): Builder {
-                        return $query->where('iban', 'LIKE', "%$search%");
+                        return $query->whereHas('server', fn (Builder $q) => $q->where('iban', 'LIKE', "%$search%"));
                     }),
                 ServerIpLinkColumn::make('ip_addresses')
                     ->label('Číslo IP')

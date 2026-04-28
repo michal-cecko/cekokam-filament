@@ -6,7 +6,7 @@ use App\Filament\Resources\BankAccounts\Pages\CreateBankAccount;
 use App\Filament\Resources\BankAccounts\Pages\EditBankAccount;
 use App\Filament\Resources\BankAccounts\Pages\ListBankAccounts;
 use App\Filament\Resources\BankAccounts\RelationManagers\BankAccountCustomerPaymentsRelationManager;
-use App\Filament\Resources\BankAccounts\RelationManagers\BankAccountCustomersRelationManager;
+use App\Filament\Resources\BankAccounts\RelationManagers\BankAccountServersRelationManager;
 use App\Filament\Resources\BankAccounts\Schemas\BankAccountForm;
 use App\Filament\Resources\BankAccounts\Tables\BankAccountsTable;
 use App\Models\Other\BankAccount;
@@ -41,7 +41,7 @@ class BankAccountResource extends Resource
     public static function getRelations(): array
     {
         return [
-            BankAccountCustomersRelationManager::class,
+            BankAccountServersRelationManager::class,
             BankAccountCustomerPaymentsRelationManager::class,
         ];
     }
