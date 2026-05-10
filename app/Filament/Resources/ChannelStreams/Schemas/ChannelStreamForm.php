@@ -57,7 +57,9 @@ class ChannelStreamForm
                                 'lg' => 5,
                             ]),
                         FileUpload::make('logo')
-                            ->preserveFilenames()
+                            ->image()
+                            ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
+                            ->maxSize(2048)
                             ->disk('public')
                             ->directory('logos')
                             ->columnSpan(12),
