@@ -23,12 +23,12 @@ jobs:
           import json, os, subprocess, urllib.request, urllib.error
 
           SITES = [
-              "https://cecko.dev",
-              "https://synapps.sk",
-              "https://adminka.synapps.sk",
-              "https://bcz-club.com",
-              "https://admin.cekokam.sk",
-              "https://cekokam.sk",
+            "https://cecko.dev",
+            "https://synapps.sk",
+            "https://adminka.synapps.sk",
+            "https://bcz-club.com",
+            "https://admin.cekokam.sk",
+            "https://cekokam.sk",
           ]
           GH_TOKEN = os.environ["GH_TOKEN"]
           REPO = os.environ["REPO"]
