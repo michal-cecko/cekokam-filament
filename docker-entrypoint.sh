@@ -1,25 +1,23 @@
-#!/bin/bash
-set -e
+#!/usr/bin/env bash
+set -euo pipefail
 
-# Recreate framework directories inside tmpfs mounts (wiped on every start)
-mkdir -p /var/www/storage/framework/cache/data \
-         /var/www/storage/framework/sessions \
-         /var/www/storage/framework/views \
+# Re-create framework dirs (tmpfs mounts are wiped on container start)
+mkdir -p /var/www/storage/framework/{cache/data,sessions,views} \
+         /var/www/storage/logs \
+         /var/www/storage/app/public \
          /var/www/bootstrap/cache
 
-# Fix permissions on mounted volumes
 chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache 2>/dev/null || true
 chmod -R 775 /var/www/storage /var/www/bootstrap/cache 2>/dev/null || true
 
-# Run migrations
-php artisan migrate --force
+# Run only on the web container; worker overrides CMD and we don't want migrate
+# to race when both containers start. Pin migrations to ROLE=web (default).
+if [ "${ROLE:-web}" = "web" ]; then
+    php artisan migrate --force
+    php artisan optimize
+    php artisan filament:optimize || true
+    php artisan icons:cache || true
+    php artisan view:cache || true
+fi
 
-# Cache optimization
-php artisan optimize
-php artisan filament:optimize
-php artisan icons:cache
-php artisan view:cache
-
-# Start PHP-FPM in background, then Nginx in foreground
-php-fpm -D
-exec nginx -g 'daemon off;'
+exec "$@"
