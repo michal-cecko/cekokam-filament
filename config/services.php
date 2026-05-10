@@ -35,4 +35,9 @@ return [
         ],
     ],
 
+    'stream_server' => [
+        'public_url' => env('STREAM_SERVER_PUBLIC_URL'),
+        'token' => env('STREAM_SERVER_TOKEN'),
+    ],
+
 ];
