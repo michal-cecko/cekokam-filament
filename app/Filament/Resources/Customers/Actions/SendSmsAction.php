@@ -3,10 +3,11 @@
 namespace App\Filament\Resources\Customers\Actions;
 
 use App\Enum\Customer\CustomerSmsType;
+use App\Enum\Customer\CustomerStatus;
 use App\Enum\RoleEnum;
 use App\Forms\Components\TextareaWithSmsCount;
+use App\Jobs\SendCustomerSmsJob;
 use App\Models\Customer\Customer;
-use App\Services\Customers\CustomerSmsService;
 use Exception;
 use Filament\Actions\Action;
 use Filament\Actions\BulkAction;
@@ -82,44 +83,59 @@ class SendSmsAction
     public static function handleAction(Customer|Collection $records, array $data): void
     {
         try {
-            if ($data['sms_type'] === CustomerSmsType::PAYMENT_REQUEST->value) {
-                $smsSentCount = CustomerSmsService::sendPaymentRequestSms($records);
-
-                if ($smsSentCount === 0) {
-                    Notification::make()
-                        ->title('Nebolo čo odoslať')
-                        ->body('Neboli nájdení žiadni zákazníci, ktorí nemajú zaplatené..')
-                        ->warning()
-                        ->send();
-                } else {
-                    Notification::make()
-                        ->title('Odoslané')
-                        ->body("Odoslaných SMS o výzve k platbe do Vašej aplikácie BulkGate: {$smsSentCount}.")
-                        ->success()
-                        ->send();
-                }
-            } else {
-                $smsSentCount = CustomerSmsService::sendCustomSms($records, $data['content']);
-
-                if ($smsSentCount === 0) {
-                    Notification::make()
-                        ->title('Nebolo čo odoslať')
-                        ->body('Neboli nájdené žiadne čísla, ktorým by sa odoslala SMS.')
-                        ->warning()
-                        ->send();
-                } else {
-                    Notification::make()
-                        ->title('Odoslané')
-                        ->body("Odoslaných SMS do Vašej aplikácie BulkGate: {$smsSentCount}.")
-                        ->success()
-                        ->send();
-                }
+            if ($records instanceof Customer) {
+                $records = new Collection([$records]);
             }
+
+            $type = $data['sms_type'];
+            $content = $data['content'] ?? null;
+
+            if ($type === CustomerSmsType::PAYMENT_REQUEST->value) {
+                $eligible = $records->filter(fn (Customer $c) => $c->status === CustomerStatus::UNPAID);
+
+                if ($eligible->isEmpty()) {
+                    Notification::make()
+                        ->title('Nebolo čo zaradiť')
+                        ->body('Neboli nájdení žiadni zákazníci, ktorí nemajú zaplatené.')
+                        ->warning()
+                        ->send();
+
+                    return;
+                }
+
+                SendCustomerSmsJob::dispatch($eligible->pluck('id')->all(), $type);
+
+                Notification::make()
+                    ->title('Zaradené do fronty')
+                    ->body("Výzvy k platbe budú odoslané pre {$eligible->count()} klientov.")
+                    ->success()
+                    ->send();
+
+                return;
+            }
+
+            if ($records->isEmpty()) {
+                Notification::make()
+                    ->title('Nebolo čo zaradiť')
+                    ->body('Neboli vybraní žiadni zákazníci.')
+                    ->warning()
+                    ->send();
+
+                return;
+            }
+
+            SendCustomerSmsJob::dispatch($records->pluck('id')->all(), $type, $content);
+
+            Notification::make()
+                ->title('Zaradené do fronty')
+                ->body("SMS budú odoslané pre {$records->count()} klientov.")
+                ->success()
+                ->send();
         } catch (Exception $e) {
-            Log::error(now()->format('Y-m-d H:i:s').' | SMS Error: '.json_encode($e->getMessage()));
+            Log::error(now()->format('Y-m-d H:i:s').' | SMS Queue Error: '.json_encode($e->getMessage()));
             Notification::make()
                 ->title('Chyba')
-                ->body('Nastala chyba pri odosielaní SMS: '.$e->getMessage())
+                ->body('Nastala chyba pri zaradení SMS do fronty: '.$e->getMessage())
                 ->danger()
                 ->send();
         }
