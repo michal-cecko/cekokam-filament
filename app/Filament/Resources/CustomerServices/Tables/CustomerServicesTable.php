@@ -53,68 +53,72 @@ class CustomerServicesTable
     {
         return [
             'customer_id' => Select::make('customer_id')
-                ->label("Zákazník")
+                ->label('Zákazník')
                 ->searchable()
                 ->relationship('customer', 'name')
-                ->placeholder("Vyberte...")
+                ->placeholder('Vyberte...')
                 ->columnSpan(['default' => 12, 'md' => 3])
                 ->default(request()->query('viaCustomer')),
 
             'combined_service' => self::getServiceSelectField(),
 
             'price' => TextInput::make('price')
-                ->label("Cena (€)")
+                ->label('Cena (€)')
                 ->numeric()
                 ->required()
                 ->columnSpan(['default' => 12, 'md' => 2]),
 
             'subscription_start' => DatePicker::make('subscription_start')
-                ->label("Platnosť od")
+                ->label('Platnosť od')
                 ->native(false)
                 ->displayFormat('F Y')
                 ->required()
                 ->columnSpan(['default' => 12, 'md' => 2]),
 
             'subscription_end' => DatePicker::make('subscription_end')
-                ->label("Platnosť do")
+                ->label('Platnosť do')
                 ->native(false)
                 ->displayFormat('F Y')
                 ->required()
                 ->columnSpan(['default' => 12, 'md' => 2]),
 
             'archive_account_id' => Select::make('archive_account_id')
-                ->label("Archív účet")
-                ->options(fn() => AccountSubscription::query()->where("type", AccountSubscriptionType::ARCHIVE)->pluck("login", "id"))
-                ->placeholder("Vyberte...")
+                ->label('Archív účet')
+                ->options(fn () => AccountSubscription::query()->where('type', AccountSubscriptionType::ARCHIVE)->pluck('login', 'id'))
+                ->placeholder('Vyberte...')
                 ->columnSpan(['default' => 12, 'md' => 3])
                 ->visible(function ($get) {
-                    $archiveID = config("service_types.archive_id");
+                    $archiveID = config('service_types.archive_id');
                     $selected = $get('combined_service');
-                    if (!$selected) return false;
+                    if (! $selected) {
+                        return false;
+                    }
 
-                    $selectedServiceTypeID = explode("-", $selected)[0] ?? null;
-                    return (string)$archiveID === (string)$selectedServiceTypeID;
+                    $selectedServiceTypeID = explode('-', $selected)[0] ?? null;
+
+                    return (string) $archiveID === (string) $selectedServiceTypeID;
                 }),
 
             'continue_next_period' => Checkbox::make('continue_next_period')
-                ->label("Pokračuje v ďalšom období")
+                ->label('Pokračuje v ďalšom období')
                 ->inline()
                 ->default(true)
                 ->columnSpanFull(),
         ];
     }
 
-    public static function getServiceSelectField(){
+    public static function getServiceSelectField()
+    {
         $services = ServiceTypeService::getGrouppedServiceTypes();
 
         return Select::make('combined_service')
-            ->label("Služba")
+            ->label('Služba')
             ->searchable()
             ->required()
             ->options($services['options'])
-            ->placeholder("Vyberte...")
+            ->placeholder('Vyberte...')
             ->columnSpan(['default' => 3])
-            ->default(fn(mixed $state, ?CustomerService $record) => $record?->getDefaultCombinedService())
+            ->default(fn (mixed $state, ?CustomerService $record) => $record?->getDefaultCombinedService())
             ->afterStateHydrated(function (mixed $state, callable $set, ?CustomerService $record) {
                 if (is_null($state) && $record) {
                     $set('combined_service', $record->getDefaultCombinedService());
@@ -122,8 +126,8 @@ class CustomerServicesTable
             })
             ->live()
             ->afterStateUpdated(function ($state, callable $set) use ($services) {
-                if ($state && !is_array($state)) {
-                    $set('price', ($p = $services['prices'][$state]['price'] ?? null) ? (float)$p : null);
+                if ($state && ! is_array($state)) {
+                    $set('price', ($p = $services['prices'][$state]['price'] ?? null) ? (float) $p : null);
                 }
             });
     }

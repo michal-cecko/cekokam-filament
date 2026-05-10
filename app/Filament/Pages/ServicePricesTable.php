@@ -143,7 +143,7 @@ class ServicePricesTable extends Page implements HasActions, HasForms
                     $this->prices->put($serviceCount->count_value, collect());
                 }
 
-                $this->prices[$serviceCount->count_value]->put($serviceType->id, $priceEntry ? (float)$priceEntry->price : null);
+                $this->prices[$serviceCount->count_value]->put($serviceType->id, $priceEntry ? (float) $priceEntry->price : null);
             }
         }
     }

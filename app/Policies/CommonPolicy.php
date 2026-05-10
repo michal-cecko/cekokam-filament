@@ -4,7 +4,6 @@ namespace App\Policies;
 
 use App\Enum\RoleEnum;
 use App\Models\User;
-use App\User\Role;
 
 class CommonPolicy
 {
