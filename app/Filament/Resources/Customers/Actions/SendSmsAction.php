@@ -82,7 +82,7 @@ class SendSmsAction
     public static function handleAction(Customer|Collection $records, array $data): void
     {
         try {
-            if ($data['sms_type'] === CustomerSmsType::PAYMENT_REQUEST) {
+            if ($data['sms_type'] === CustomerSmsType::PAYMENT_REQUEST->value) {
                 $smsSentCount = CustomerSmsService::sendPaymentRequestSms($records);
 
                 if ($smsSentCount === 0) {
