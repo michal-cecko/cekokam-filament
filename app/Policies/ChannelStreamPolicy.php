@@ -5,7 +5,6 @@ namespace App\Policies;
 use App\Enum\RoleEnum;
 use App\Models\ChannelStream;
 use App\Models\User;
-use App\User\Role;
 
 class ChannelStreamPolicy
 {

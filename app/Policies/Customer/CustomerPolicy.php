@@ -5,7 +5,6 @@ namespace App\Policies\Customer;
 use App\Enum\RoleEnum;
 use App\Models\Customer\Customer;
 use App\Models\User;
-use App\User\Role;
 
 class CustomerPolicy
 {

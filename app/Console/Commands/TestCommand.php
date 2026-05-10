@@ -2,12 +2,6 @@
 
 namespace App\Console\Commands;
 
-use App\Models\Customer\Customer;
-use App\Models\Customer\CustomerService;
-use App\Models\Service\AccountSubscription;
-use App\Models\User;
-use App\Notifications\ArchiveAccountExpiredNotification;
-use Carbon\Carbon;
 use Illuminate\Console\Command;
 
 class TestCommand extends Command
