@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Pages\AppSettings;
 use App\Filament\Pages\ServicePricesTable;
 use App\Filament\Resources\AccountSubscriptions\AccountSubscriptionResource;
 use App\Filament\Resources\BankAccounts\BankAccountResource;
@@ -54,6 +55,7 @@ class AdminPanelProvider extends PanelProvider
                     ...ServerResource::getNavigationItems(),
                     ...(ChannelStreamResource::canAccess() ? ChannelStreamResource::getNavigationItems() : []),
                     ...UserResource::getNavigationItems(),
+                    ...(AppSettings::canAccess() ? AppSettings::getNavigationItems() : []),
                 ]);
             })
             ->databaseNotifications()
