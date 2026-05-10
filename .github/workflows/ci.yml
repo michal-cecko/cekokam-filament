@@ -1,0 +1,123 @@
+# CI pipeline: tests, lint, and worker redeploy
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: testing
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: pdo_pgsql, pgsql, mbstring, xml, gd, zip, intl, bcmath, pcntl, exif
+          coverage: none
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install Composer dependencies
+        run: composer install --no-scripts --no-interaction --prefer-dist
+
+      - name: Install NPM dependencies and build assets
+        run: npm ci && npm run build
+
+      - name: Prepare application
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+          php artisan package:discover --ansi
+
+      - name: Run Pint
+        run: vendor/bin/pint --test
+
+      - name: Run tests
+        env:
+          DB_CONNECTION: pgsql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 5432
+          DB_DATABASE: testing
+          DB_USERNAME: postgres
+          DB_PASSWORD: postgres
+        run: php artisan test --parallel
+
+  deploy-worker:
+    needs: test
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Wait for Dokploy app deploy
+        run: sleep 30
+
+      - name: Redeploy worker
+        run: |
+          set +e
+          MAX_ATTEMPTS=6
+          SLEEP_SECONDS=30
+          for attempt in $(seq 1 "$MAX_ATTEMPTS"); do
+            HTTP_BODY=$(mktemp)
+            HTTP_CODE=$(curl -sS -o "$HTTP_BODY" -w '%{http_code}' -X POST \
+              -H "x-api-key: ${{ secrets.DOKPLOY_API_KEY }}" \
+              -H "Content-Type: application/json" \
+              -d '{"json":{"applicationId":"npUdi-Ync2w3IXPJ7i0_l"}}' \
+              "${{ secrets.DOKPLOY_URL }}/api/trpc/application.deploy")
+            echo "Attempt $attempt: HTTP $HTTP_CODE"
+            cat "$HTTP_BODY"
+            echo
+            if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 300 ]; then
+              exit 0
+            fi
+            # 409 (in progress) and 5xx are worth retrying; 4xx are fatal config errors.
+            if [ "$HTTP_CODE" -ne 409 ] && [ "$HTTP_CODE" -lt 500 ]; then
+              echo "Non-retryable status $HTTP_CODE — failing fast"
+              exit 1
+            fi
+            sleep "$SLEEP_SECONDS"
+          done
+          echo "Worker redeploy did not succeed after $MAX_ATTEMPTS attempts"
+          exit 1
+
+  notify:
+    needs: [test, deploy-worker]
+    if: always() && contains(needs.*.result, 'failure')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Notify Telegram on failure
+        uses: appleboy/telegram-action@master
+        with:
+          to: ${{ secrets.TELEGRAM_CHAT_ID }}
+          token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          message: |
+            ❌ CI failed on ${{ github.repository }}
+            Branch: ${{ github.ref_name }}
+            Commit: ${{ github.event.head_commit.message }}
+            ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
