@@ -60,6 +60,13 @@ COPY --from=builder /usr/local/bin/rr /usr/local/bin/rr
 RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache \
     && chmod -R 775 /var/www/storage /var/www/bootstrap/cache
 
+# Dokploy's docker terminal hardcodes `docker exec -w /`, overriding WORKDIR.
+# Auto-cd into the app dir for interactive shells (bash/sh/ash, login or not).
+RUN printf 'cd /var/www\n' > /etc/profile.d/cd-app.sh \
+    && printf 'cd /var/www\n' > /root/.bashrc \
+    && printf 'cd /var/www\n' > /root/.ashrc
+ENV ENV=/root/.ashrc
+
 COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
