@@ -57,6 +57,7 @@ class CustomerPaymentsRelationManager extends RelationManager
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
                 ]),
-            ]);
+            ])
+            ->defaultSort('received_at', 'desc');
     }
 }

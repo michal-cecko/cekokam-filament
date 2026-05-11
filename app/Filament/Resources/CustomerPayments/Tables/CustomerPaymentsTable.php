@@ -72,6 +72,6 @@ class CustomerPaymentsTable
             ->striped()
             ->recordAction('edit')
             ->defaultPaginationPageOption(25)
-            ->defaultSort('id', 'desc');
+            ->defaultSort('received_at', 'desc');
     }
 }

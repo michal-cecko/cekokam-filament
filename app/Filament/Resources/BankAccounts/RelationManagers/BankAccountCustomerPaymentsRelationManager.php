@@ -40,6 +40,7 @@ class BankAccountCustomerPaymentsRelationManager extends RelationManager
             ])
             ->toolbarActions([
                 //
-            ]);
+            ])
+            ->defaultSort('received_at', 'desc');
     }
 }
