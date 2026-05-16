@@ -14,11 +14,11 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 WORKDIR /var/www
 
 # Dependency manifests first for cache layer reuse
-# auth.json provides Filament Pro credentials; needed because composer install
-# fetches packages.filamentphp.com (HTTP 401 without it).
-COPY composer.json composer.lock auth.json ./
-RUN composer install --no-dev --optimize-autoloader --no-scripts --no-autoloader --prefer-dist \
-    && rm -f auth.json
+# COMPOSER_AUTH provides Filament Pro credentials at build time via Dokploy build arg
+# (packages.filamentphp.com returns HTTP 401 without it).
+ARG COMPOSER_AUTH
+COPY composer.json composer.lock ./
+RUN COMPOSER_AUTH="$COMPOSER_AUTH" composer install --no-dev --optimize-autoloader --no-scripts --no-autoloader --prefer-dist
 
 COPY package.json package-lock.json ./
 RUN npm ci --no-audit --no-fund
