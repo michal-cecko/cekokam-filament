@@ -26,3 +26,6 @@ Thumbs.db
 rr
 .rr.yaml
 .env.prod
+
+# Composer Filament Pro credentials (provide via Dokploy COMPOSER_AUTH build arg)
+auth.json
