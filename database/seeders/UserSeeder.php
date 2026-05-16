@@ -10,17 +10,19 @@ class UserSeeder extends Seeder
 {
     public function run(): void
     {
+        $password = bcrypt(env('ADMIN_SEED_PASSWORD', bin2hex(random_bytes(16))));
+
         $admins = [
             [
                 'email' => 'cekokam@gmail.com',
                 'name' => 'Peter Čečko',
-                'password' => bcrypt('***REMOVED***'),
+                'password' => $password,
                 'role' => RoleEnum::ADMIN,
             ],
             [
                 'email' => 'ceckomichal@gmail.com',
                 'name' => 'Michal Čečko',
-                'password' => bcrypt('***REMOVED***'),
+                'password' => $password,
                 'role' => RoleEnum::ADMIN,
             ],
         ];

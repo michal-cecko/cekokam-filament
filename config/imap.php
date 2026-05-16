@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'username' => 'info@cekokam.sk',
-    'password' => '***REMOVED***',
-    'hostname' => '{imap.m1.websupport.sk:993/imap/ssl/novalidate-cert}INBOX',
+    'username' => env('IMAP_USERNAME'),
+    'password' => env('IMAP_PASSWORD'),
+    'hostname' => env('IMAP_HOST', '{imap.m1.websupport.sk:993/imap/ssl/novalidate-cert}INBOX'),
 ];
