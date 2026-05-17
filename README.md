@@ -1,59 +1,65 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Cekokam Dashboard
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Internal CRM, billing and subscriber management for a regional TV/stream operator. Built for Cekokam s.r.o.
 
-## About Laravel
+## What it does
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- **Customers & subscriptions** — household-level customer records, multiple service types (TV packages, internet tiers, equipment rentals), seasonal price changes
+- **Billing** — automatic invoice generation from active subscriptions, supports multiple payment methods
+- **Payment matching** — IMAP inbox watcher polls Tatra banka payment notifications and auto-matches against open invoices by amount + IBAN
+- **SMS notifications** — BulkGate integration for payment reminders and service updates
+- **Channel/stream management** — companion to [`cekokam-stream-server`](https://github.com/michal-cecko/cekokam-stream-server) (the Go service that serves the HLS streams)
+- **Multi-role admin** — admin, agent, technician views in a single Filament panel
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Stack
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+| Layer | Tech |
+|---|---|
+| Backend | **Laravel 12** on PHP 8.5, **Octane** + RoadRunner |
+| Admin | **Filament v5** |
+| SMS | BulkGate PHP SDK |
+| Email parsing | IMAP for payment auto-matching |
+| Errors | Sentry |
+| Tests | PHPUnit + ParaTest |
+| Code style | Laravel Pint |
+| Deploy | Docker → Dokploy |
 
-## Learning Laravel
+## Local dev
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+```bash
+cp .env.example .env
+vendor/bin/sail up -d
+vendor/bin/sail composer install
+vendor/bin/sail npm install
+vendor/bin/sail artisan key:generate
+vendor/bin/sail artisan migrate --seed
+vendor/bin/sail npm run dev
+```
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+Admin at `/admin`.
 
-## Laravel Sponsors
+## Required env
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+| Var | Purpose |
+|---|---|
+| `COMPOSER_AUTH` | Filament Pro auth (build time, JSON) |
+| `IMAP_USERNAME` / `IMAP_PASSWORD` / `IMAP_HOST` | Payment-notification mailbox |
+| `BULKGATE_APP_TOKEN` / `BULKGATE_APP_ID` | SMS sender |
+| `STREAM_SERVER_TOKEN` | Bearer token for cekokam-stream-server API |
+| `ADMIN_SEED_PASSWORD` | Initial seeder admin password (random if unset) |
 
-### Premium Partners
+## CI
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+GitHub Actions `ci.yml`:
 
-## Contributing
+1. **test** — Pint + PHPUnit against Postgres service
+2. **deploy-worker** — re-deploy worker via Dokploy API
+3. **notify** — Telegram on failure
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## Deploy
 
-## Code of Conduct
-
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+Two-stage `Dockerfile`. Build stage uses a pre-built base image (deploy the "base" Dokploy service first). Runtime is lean PHP 8.4 alpine + Octane.
 
 ## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+[MIT](LICENSE) © Michal Čečko
