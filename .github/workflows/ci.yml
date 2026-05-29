@@ -1,4 +1,4 @@
-# CI pipeline: tests, lint, and worker redeploy
+# CI pipeline: tests, lint, image build/push, and pull-based deploy
 name: CI
 
 on:
@@ -69,46 +69,75 @@ jobs:
           DB_PASSWORD: postgres
         run: php artisan test --parallel
 
-  deploy-worker:
+  build-image:
     needs: test
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Normalize COMPOSER_AUTH to a single compact line so it survives the
+      # docker build-args block regardless of how the secret is stored
+      # (a multi-line pretty-printed value silently breaks "KEY=VALUE" build-args).
+      - name: Normalize COMPOSER_AUTH
+        env:
+          COMPOSER_AUTH: ${{ secrets.COMPOSER_AUTH }}
+        run: echo "COMPOSER_AUTH_MIN=$(printf '%s' "$COMPOSER_AUTH" | jq -c .)" >> "$GITHUB_ENV"
+
+      - name: Build and push image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: |
+            ghcr.io/michal-cecko/cekokam-filament:latest
+            ghcr.io/michal-cecko/cekokam-filament:sha-${{ github.sha }}
+          build-args: |
+            COMPOSER_AUTH=${{ env.COMPOSER_AUTH_MIN }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy:
+    needs: build-image
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-latest
     environment: production
 
     steps:
-      - name: Wait for Dokploy app deploy
-        run: sleep 30
-
-      - name: Redeploy worker
+      - name: Pin web + worker to the new image and deploy (pull, no host build)
+        env:
+          API: ${{ secrets.DOKPLOY_URL }}
+          KEY: ${{ secrets.DOKPLOY_API_KEY }}
+          IMG: ghcr.io/michal-cecko/cekokam-filament:sha-${{ github.sha }}
         run: |
-          set +e
-          MAX_ATTEMPTS=6
-          SLEEP_SECONDS=30
-          for attempt in $(seq 1 "$MAX_ATTEMPTS"); do
-            HTTP_BODY=$(mktemp)
-            HTTP_CODE=$(curl -sS -o "$HTTP_BODY" -w '%{http_code}' -X POST \
-              -H "x-api-key: ${{ secrets.DOKPLOY_API_KEY }}" \
-              -H "Content-Type: application/json" \
-              -d '{"json":{"applicationId":"npUdi-Ync2w3IXPJ7i0_l"}}' \
-              "${{ secrets.DOKPLOY_URL }}/api/trpc/application.deploy")
-            echo "Attempt $attempt: HTTP $HTTP_CODE"
-            cat "$HTTP_BODY"
-            echo
-            if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 300 ]; then
-              exit 0
-            fi
-            # 409 (in progress) and 5xx are worth retrying; 4xx are fatal config errors.
-            if [ "$HTTP_CODE" -ne 409 ] && [ "$HTTP_CODE" -lt 500 ]; then
-              echo "Non-retryable status $HTTP_CODE — failing fast"
-              exit 1
-            fi
-            sleep "$SLEEP_SECONDS"
+          set -e
+          for APP in Gpaxh31c0BD20-i9t7DSL npUdi-Ync2w3IXPJ7i0_l; do
+            curl -sf -X POST -H "x-api-key: $KEY" -H "Content-Type: application/json" \
+              -d "{\"applicationId\":\"$APP\",\"dockerImage\":\"$IMG\"}" \
+              "$API/api/application.update" > /dev/null
+            curl -sf -X POST -H "x-api-key: $KEY" -H "Content-Type: application/json" \
+              -d "{\"applicationId\":\"$APP\"}" \
+              "$API/api/application.deploy" > /dev/null
+            echo "deployed $APP -> $IMG"
           done
-          echo "Worker redeploy did not succeed after $MAX_ATTEMPTS attempts"
-          exit 1
 
   notify:
-    needs: [test, deploy-worker]
+    needs: [test, build-image, deploy]
     if: always() && contains(needs.*.result, 'failure')
     runs-on: ubuntu-latest
 
