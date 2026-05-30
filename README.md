@@ -1,6 +1,6 @@
 # Cekokam Dashboard
 
-Internal CRM, billing and subscriber management for a regional TV/stream operator. Built for Cekokam s.r.o.
+Internal CRM, billing and subscriber management dashboard.
 
 ## What it does
 
