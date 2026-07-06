@@ -19,6 +19,7 @@ class ServiceTypeService
     public static function getServiceGroupsOptions(): array
     {
         $types = ServiceType::query()->orderBy('name')->get();
+
         $counts = ServiceTypeCount::query()->orderBy('count_value')->get();
 
         return [
