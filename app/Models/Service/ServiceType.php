@@ -35,6 +35,7 @@ class ServiceType extends Model
         return $this->hasMany(ServiceTypePrice::class);
     }
 
+
     public function customerServices(): HasMany
     {
         return $this->hasMany(CustomerService::class, 'service_type_id');
