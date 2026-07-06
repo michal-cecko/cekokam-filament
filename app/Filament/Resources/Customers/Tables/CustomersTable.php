@@ -17,6 +17,7 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Support\Enums\FontWeight;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ToggleColumn;
+use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Grouping\Group;
@@ -87,6 +88,13 @@ class CustomersTable
                 TextColumn::make('subscription_end')
                     ->label('Platnosť do')
                     ->visibleFrom('md')
+                    ->sortable(query: function (Builder $query, string $direction): Builder {
+                        $direction = strtolower($direction) === 'desc' ? 'desc' : 'asc';
+
+                        return $query->orderByRaw(
+                            "(SELECT MAX(subscription_end) FROM customer_services WHERE customer_services.customer_id = customers.id) {$direction} NULLS FIRST"
+                        );
+                    })
                     ->getStateUsing(function ($record) {
                         return $record->subscription_end === null ? '-' : date('F Y', strtotime($record->subscription_end));
                     }),
@@ -155,13 +163,19 @@ class CustomersTable
             ->groups([
                 Group::make('year_added')
                     ->label('Rok pridania')
-                    ->orderQueryUsing(function (Builder $query, string $direction) {
+                    ->orderQueryUsing(function (Builder $query, string $direction, HasTable $livewire) {
                         $hasDirectionParam = isset($_GET['tableGroupingDirection']) ||
                             str_contains($_SERVER['HTTP_REFERER'] ?? '', 'tableGroupingDirection');
 
                         $finalDirection = $hasDirectionParam ? $direction : 'desc';
 
-                        return $query->orderBy('year_added', $finalDirection)->orderBy('highest_ip', $finalDirection);
+                        $query->orderBy('year_added', $finalDirection);
+
+                        if ($livewire->getTableSortColumn() !== 'subscription_end') {
+                            $query->orderBy('highest_ip', $finalDirection);
+                        }
+
+                        return $query;
                     })
                     ->getTitleFromRecordUsing(fn ($record) => "{$record->year_added} (".($counts->where('year_added', $record->year_added)->first()?->total ?? '???').')')
                     ->titlePrefixedWithLabel(false)

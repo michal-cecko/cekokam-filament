@@ -63,7 +63,7 @@ class BulkEditCustomerAction
                 ])->columnSpan(['default' => 4]),
 
                 Group::make([
-                    CustomerFormFields::combinedService(multiple: true)
+                    CustomerFormFields::combinedService(multiple: true, withGroups: true)
                         ->required(false)
                         ->visible(fn (Get $get): bool => $get('edit_subscription_start') || $get('edit_subscription_end')),
                     Checkbox::make('edit_subscription_start')
@@ -92,7 +92,7 @@ class BulkEditCustomerAction
      */
     public static function handleAction(Collection $records, array $data): bool
     {
-        $combinedServices = CustomerService::parseMultipleCombinedService($data['combined_service'] ?? null);
+        $selectors = CustomerService::parseServiceSelectors($data['combined_service'] ?? null);
 
         unset($data['combined_service']);
 
@@ -108,11 +108,13 @@ class BulkEditCustomerAction
         try {
             foreach ($records as $record) {
 
-                if (! empty($combinedServices)) {
-                    $customerServices = $record->services->filter(function ($service) use ($combinedServices) {
-                        return collect($combinedServices)->contains(function ($combinedService) use ($service) {
-                            return $service->service_type_id == $combinedService['service_type_id'] &&
-                                $service->service_count_id == $combinedService['service_count_id'];
+                if (! empty($selectors)) {
+                    $customerServices = $record->services->filter(function ($service) use ($selectors) {
+                        return collect($selectors)->contains(function ($selector) use ($service) {
+                            $typeMatches = $selector['service_type_id'] === null || $service->service_type_id == $selector['service_type_id'];
+                            $countMatches = $selector['service_count_id'] === null || $service->service_count_id == $selector['service_count_id'];
+
+                            return $typeMatches && $countMatches;
                         });
                     });
                 } else {

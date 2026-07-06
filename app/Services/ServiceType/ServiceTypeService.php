@@ -3,10 +3,34 @@
 namespace App\Services\ServiceType;
 
 use App\Models\Service\ServiceType;
+use App\Models\Service\ServiceTypeCount;
 use Illuminate\Support\Collection;
 
 class ServiceTypeService
 {
+    /**
+     * Grouped select options representing whole service types and whole counts.
+     *
+     * Values use the "type:{id}" and "count:{count_value}" prefixes so they never
+     * collide with the concrete "{type_id}-{count_value}" combo values.
+     *
+     * @return array<string, array<string, string>>
+     */
+    public static function getServiceGroupsOptions(): array
+    {
+        $types = ServiceType::query()->orderBy('name')->get();
+        $counts = ServiceTypeCount::query()->orderBy('count_value')->get();
+
+        return [
+            'Typy (celé)' => $types
+                ->mapWithKeys(fn (ServiceType $type): array => ["type:{$type->id}" => "{$type->name} (všetky počty)"])
+                ->all(),
+            'Počty (celé)' => $counts
+                ->mapWithKeys(fn (ServiceTypeCount $count): array => ["count:{$count->count_value}" => "{$count->count_value} TV (všetky typy)"])
+                ->all(),
+        ];
+    }
+
     // TYPES: flatten_with_prices, options
     public static function getGrouppedServiceTypes(): Collection
     {

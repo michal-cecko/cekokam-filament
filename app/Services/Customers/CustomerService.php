@@ -79,6 +79,33 @@ class CustomerService
         return $return;
     }
 
+    /**
+     * Normalize a mixed list of service selector tokens into filter selectors.
+     *
+     * Accepts three token shapes: "{typeId}-{countId}" (concrete combo),
+     * "type:{typeId}" (whole service type) and "count:{countValue}" (whole count).
+     * A null column means "any".
+     *
+     * @param  array<int, string>|null  $values
+     * @return array<int, array{service_type_id: int|null, service_count_id: int|null}>
+     */
+    public static function parseServiceSelectors(?array $values): array
+    {
+        $selectors = [];
+
+        foreach ($values ?? [] as $value) {
+            if (str_starts_with($value, 'type:')) {
+                $selectors[] = ['service_type_id' => (int) substr($value, 5), 'service_count_id' => null];
+            } elseif (str_starts_with($value, 'count:')) {
+                $selectors[] = ['service_type_id' => null, 'service_count_id' => (int) substr($value, 6)];
+            } elseif ($pair = self::parseCombinedService($value)) {
+                $selectors[] = ['service_type_id' => $pair['service_type_id'], 'service_count_id' => $pair['service_count_id']];
+            }
+        }
+
+        return $selectors;
+    }
+
     public static function syncRepeaterServices(?Model $customer, array $data): void
     {
         if (empty($customer)) {

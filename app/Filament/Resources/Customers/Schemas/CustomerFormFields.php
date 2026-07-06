@@ -6,6 +6,7 @@ use App\Enum\Customer\CustomerStatus;
 use App\Filament\Resources\CustomerServices\Schemas\CustomerServiceForm;
 use App\Forms\Components\PhoneInput;
 use App\Models\Customer\Customer;
+use App\Services\ServiceType\ServiceTypeService;
 use Coolsam\Flatpickr\Forms\Components\Flatpickr;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -127,12 +128,19 @@ class CustomerFormFields
             ->dateFormat('F Y');
     }
 
-    public static function combinedService(bool $multiple = false): Select
+    public static function combinedService(bool $multiple = false, bool $withGroups = false): Select
     {
         $field = CustomerServiceForm::getServiceSelectField();
 
         if ($multiple) {
             $field->multiple();
+        }
+
+        if ($withGroups) {
+            $field->options(array_merge(
+                ServiceTypeService::getServiceGroupsOptions(),
+                CustomerServiceForm::$services['options'] ?? [],
+            ));
         }
 
         return $field;
