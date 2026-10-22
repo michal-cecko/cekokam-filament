@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 
 # ---- builder ----
-FROM php:8.4-cli-alpine AS builder
+FROM php:8.4.27-cli-alpine AS builder
 
 RUN apk add --no-cache bash git curl unzip nodejs npm imap-dev linux-headers \
     && curl -sSLf -o /usr/local/bin/install-php-extensions \
@@ -37,7 +37,7 @@ RUN php ./vendor/bin/rr get-binary --location /usr/local/bin
 
 
 # ---- runtime ----
-FROM php:8.4-cli-alpine AS runtime
+FROM php:8.4.27-cli-alpine AS runtime
 
 RUN apk add --no-cache bash curl tini imap-dev \
     && curl -sSLf -o /usr/local/bin/install-php-extensions \
