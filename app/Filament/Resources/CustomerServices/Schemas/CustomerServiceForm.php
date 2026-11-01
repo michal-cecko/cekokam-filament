@@ -42,7 +42,8 @@ class CustomerServiceForm
                 ->placeholder('Vyberte...')
                 ->columnSpan(['default' => 3])
                 ->default(request()->query('viaCustomer') ?? null),
-            'combined_service' => static::getServiceSelectField(),
+            'combined_service' => static::getServiceSelectField()
+                ->partiallyRenderComponentsAfterStateUpdated(['price', 'archive_account_id']),
             'price' => TextInput::make('price')
                 ->label('Cena (€)')
                 ->required()
@@ -61,7 +62,7 @@ class CustomerServiceForm
                 ->columnSpan(['default' => 3]),
             Select::make('archive_account_id')
                 ->label('Archív účet')
-                ->options(AccountSubscription::where('type', AccountSubscriptionType::ARCHIVE)->pluck('login', 'id'))
+                ->options(fn (): Collection => once(fn (): Collection => AccountSubscription::where('type', AccountSubscriptionType::ARCHIVE)->pluck('login', 'id')))
                 ->placeholder('Vyberte...')
                 ->columnSpan(['default' => 3])
                 ->default(request()->query('viaAccountSubscription') ?? null)

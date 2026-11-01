@@ -33,7 +33,9 @@ RUN composer dump-autoload --optimize --classmap-authoritative \
     && rm -rf node_modules
 
 # RoadRunner binary (Linux/amd64 inside the build container)
-RUN php ./vendor/bin/rr get-binary --location /usr/local/bin
+# Pinned to 2025.1: Octane 2.22 treats RoadRunner 3.x as too old and re-downloads a binary on every start.
+# Keep in step with spiral/roadrunner-http in composer.json.
+RUN php ./vendor/bin/rr get-binary --filter '2025.1.*' --no-config --location /usr/local/bin
 
 
 # ---- runtime ----

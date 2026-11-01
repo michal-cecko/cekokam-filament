@@ -49,6 +49,30 @@ class ListCustomers extends ListRecords
         return $tabs;
     }
 
+    /**
+     * The stats widget does not poll, so it refreshes after a toggle or an action changes customers.
+     */
+    public function updateTableColumnState(string $column, string $record, mixed $input): mixed
+    {
+        $result = parent::updateTableColumnState($column, $record, $input);
+
+        $this->dispatch('refresh-customer-stats');
+
+        return $result;
+    }
+
+    /**
+     * @param  array<string, mixed>  $arguments
+     */
+    public function callMountedAction(array $arguments = []): mixed
+    {
+        $result = parent::callMountedAction($arguments);
+
+        $this->dispatch('refresh-customer-stats');
+
+        return $result;
+    }
+
     public function getDefaultActiveTab(): string|int|null
     {
         return 'all';

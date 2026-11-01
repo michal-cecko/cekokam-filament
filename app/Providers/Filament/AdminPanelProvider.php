@@ -20,6 +20,7 @@ use Filament\Navigation\NavigationBuilder;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Enums\Width;
+use Filament\View\PanelsRenderHook;
 use Filament\Widgets\AccountWidget;
 use Filament\Widgets\FilamentInfoWidget;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
@@ -28,6 +29,7 @@ use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use Illuminate\View\View;
 use MarcelWeidum\Passkeys\PasskeysPlugin;
 
 class AdminPanelProvider extends PanelProvider
@@ -41,6 +43,8 @@ class AdminPanelProvider extends PanelProvider
             ->login()
             ->profile()
             ->passwordReset()
+            ->spa()
+            ->renderHook(PanelsRenderHook::HEAD_END, fn (): View => view('filament.hooks.refresh-after-back'))
             ->plugins([
                 PasskeysPlugin::make(),
             ])
