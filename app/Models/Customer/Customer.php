@@ -120,9 +120,13 @@ class Customer extends Model
         return implode('<br>', $this->phone);
     }
 
+    /**
+     * Sums with a closure, not sum('total_price'): sum by key reads an accessor twice (isset, then get).
+     */
     public function getTotalPriceAttribute(): float
     {
-        $amount = $this->services->sum('total_price') - $this->currentPeriodPayments->sum('amount_paid');
+        $amount = $this->services->sum(fn (CustomerService $service): float => $service->total_price)
+            - $this->currentPeriodPayments->sum('amount_paid');
 
         return max($amount, 0);
     }

@@ -9,10 +9,14 @@ use Filament\Support\Enums\Width;
 use Filament\Widgets\Concerns\InteractsWithPageTable;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
+use Livewire\Attributes\On;
 
+#[On('refresh-customer-stats')]
 class CustomerListStats extends BaseWidget
 {
     use InteractsWithPageTable;
+
+    protected ?string $pollingInterval = null;
 
     protected function getTablePage(): string
     {
@@ -38,15 +42,29 @@ class CustomerListStats extends BaseWidget
     {
         $count = $this->getPageTableQuery()->count();
 
-        // Load active customers once instead of 3 separate queries
         $activeCustomers = $this->getPageTableQuery()
             ->where('status', '!=', CustomerStatus::TURNED_OFF)
-            ->with(['services', 'currentPeriodPayments'])
+            ->select(['customers.id', 'customers.status'])
+            ->with([
+                'services:id,customer_id,price,subscription_start,subscription_end',
+                'currentPeriodPayments:id,customer_id,amount_paid',
+            ])
             ->get();
 
-        $unpaid = $activeCustomers->where('status', CustomerStatus::UNPAID)->sum('total_price');
-        $all = $activeCustomers->sum('total_price');
-        $monthly = $activeCustomers->sum('total_monthly_price');
+        $unpaid = 0;
+        $all = 0;
+        $monthly = 0;
+
+        foreach ($activeCustomers as $customer) {
+            $totalPrice = $customer->total_price;
+
+            $all += $totalPrice;
+            $monthly += $customer->total_monthly_price;
+
+            if ($customer->status === CustomerStatus::UNPAID) {
+                $unpaid += $totalPrice;
+            }
+        }
 
         return [
             Stat::make('Počet', $count)

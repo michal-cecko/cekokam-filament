@@ -6,6 +6,7 @@ use App\Enum\Customer\CustomerStatus;
 use App\Filament\Resources\CustomerServices\Schemas\CustomerServiceForm;
 use App\Forms\Components\PhoneInput;
 use App\Models\Customer\Customer;
+use App\Models\Other\City;
 use App\Services\ServiceType\ServiceTypeService;
 use Coolsam\Flatpickr\Forms\Components\Flatpickr;
 use Filament\Forms\Components\Select;
@@ -13,6 +14,7 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\ToggleButtons;
+use Illuminate\Support\Str;
 
 class CustomerFormFields
 {
@@ -37,8 +39,17 @@ class CustomerFormFields
     {
         return Select::make('city_id')
             ->label('Obec')
-            ->preload()
+            ->searchable()
             ->relationship('city', 'name')
+            ->getSearchResultsUsing(fn (string $search): array => City::query()
+                ->whereRaw(
+                    "translate(name, 'áäčďéěíĺľňóôŕřšťúůýžÁÄČĎÉĚÍĹĽŇÓÔŔŘŠŤÚŮÝŽ', 'aacdeeillnoorrstuuyzAACDEEILLNOORRSTUUYZ') ilike ?",
+                    ['%'.Str::ascii($search).'%'],
+                )
+                ->orderBy('name')
+                ->limit(50)
+                ->pluck('name', 'id')
+                ->all())
             ->placeholder('Vyberte...')
             ->default(request()->query('viaCity') ?? null);
     }

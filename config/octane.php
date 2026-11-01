@@ -221,4 +221,18 @@ return [
 
     'max_execution_time' => 30,
 
+    /*
+    |--------------------------------------------------------------------------
+    | RoadRunner HTTP Middleware
+    |--------------------------------------------------------------------------
+    |
+    | "static" serves the files in public/ and "gzip" compresses every response.
+    | Filament pages are large HTML, so gzip cuts them to a small part.
+    |
+    */
+
+    'roadrunner' => [
+        'http_middleware' => 'static,gzip',
+    ],
+
 ];
